@@ -3,10 +3,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { VersioningType } from '@nestjs/common';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Security 
+  app.enableCors();
+  app.use(helmet());
+
+
+  // OpenApi swagger documentation
+  
   const config = new DocumentBuilder()
     .setTitle('Organize Simple API')
     .setDescription(
