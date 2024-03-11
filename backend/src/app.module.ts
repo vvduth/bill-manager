@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { ParsersModule } from './parsers/parsers.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { AuthModule } from './auth/auth.module';
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV !== "production"
     }),
-    AuthModule
+    AuthModule,
+    ParsersModule
   ],
   controllers: [AppController],
   providers: [AppService],
