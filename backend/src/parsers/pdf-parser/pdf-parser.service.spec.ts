@@ -16,4 +16,20 @@ describe('PdfParserService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  describe("postProcessedText", () => {
+    it("should trim the lines and remove excess inner whitesoace to keep a maximum of 3", () => {
+      const input = '       a            b                  c d         ';
+      const expected = 'a   b   c d';
+      const actual = service['postPrcoessText'](input)
+      expect(actual).toEqual(expected);
+    })
+
+    it('should keep only one empty line if mulyiple lines are empty', ()  => {
+      const input = 'a\n\n\nb\n\n\n\nc\nd';
+      const expected = 'a\n\nb\n\nc\nd';
+      const actual = service['postProcessText'](input)
+      expect(actual).toEqual(expected);
+    });
+  })
 });
