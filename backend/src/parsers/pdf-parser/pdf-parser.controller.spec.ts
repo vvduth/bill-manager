@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PdfParsersController } from './pdf-parser.controller';
 import { PdfParserService } from './pdf-parser.service';
 import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 
 describe('PdfParserController', () => {
   let controller: PdfParsersController;
@@ -14,7 +15,7 @@ describe('PdfParserController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PdfParsersController],
       providers: [PdfParserService],
-      imports: [ConfigModule.forRoot()]
+      imports: [ConfigModule.forRoot(), HttpModule]
     }).compile();
 
     controller = module.get<PdfParsersController>(PdfParsersController);

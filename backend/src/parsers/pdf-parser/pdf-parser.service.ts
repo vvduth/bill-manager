@@ -45,7 +45,7 @@ export class PdfParserService {
       responseType: 'arraybuffer',
     });
 
-    if (response.headers['content-type'] !== 'application/pdf'){
+    if (!response.headers['content-type'].includes('application/pdf')){
       throw new BadRequestException('The provided URL is not a PDF')
     }
 

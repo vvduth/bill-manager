@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  Body,
   Controller,
   ParseFilePipeBuilder,
   Post,
@@ -10,7 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { PdfParserService } from './pdf-parser.service';
-import { PdfParserResultDto, PdfParserUploadResultDto, PdfParserUrlresultDto } from './dto/pdf-parser-result.dto';
+import {  PdfParserUploadResultDto, PdfParserUrlresultDto } from './dto/pdf-parser-result.dto';
 import { PdfParserRequestDto } from './dto/pdf-parser-request.dto';
 
 const uploadSchema = {
@@ -63,6 +64,16 @@ export class PdfParsersController {
     @Body() requestDto: PdfParserRequestDto
   ) : Promise<PdfParserUrlresultDto> {
 
-    
+    const file = await this.pdfparserService.loadPdfFromUrl(requestDto.url);
+    const text = await this.pdfparserService.parsePdf(file)
+
+    if (typeof text !== 'string' || text.length === 0) {
+      throw new UnprocessableEntityException('Could not parse given PDF file');
+    }
+
+    return {
+      originalUrl: requestDto.url,
+      content: text,
+    }
   }
 }
