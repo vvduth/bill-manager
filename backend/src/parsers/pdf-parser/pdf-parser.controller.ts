@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  BadRequestException,
   Body,
   Controller,
   ParseFilePipeBuilder,
@@ -11,8 +12,12 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { PdfParserService } from './pdf-parser.service';
-import {  PdfParserUploadResultDto, PdfParserUrlresultDto } from './dto/pdf-parser-result.dto';
+import {
+  PdfParserUploadResultDto,
+  PdfParserUrlresultDto,
+} from './dto/pdf-parser-result.dto';
 import { PdfParserRequestDto } from './dto/pdf-parser-request.dto';
+import { PdfNotParsedError } from './exceptions/exceptions';
 
 const uploadSchema = {
   type: 'object',
@@ -47,33 +52,34 @@ export class PdfParsersController {
   async parsePdfFromUpload(
     @UploadedFile(pdfPipe) file: Express.Multer.File,
   ): Promise<PdfParserUploadResultDto> {
-    const text = await this.pdfparserService.parsePdf(file.buffer);
-
-    if (typeof text !== 'string' || text.length === 0) {
-      throw new UnprocessableEntityException('Could not parse given PDF file');
+    try {
+      const text = await this.pdfparserService.parsePdf(file.buffer);
+      return {
+        originalFileName: file.originalname,
+        content: text,
+      };
+    } catch (error) {
+      throw new UnprocessableEntityException(error.message);
     }
-
-    return {
-      originalFileName: file.originalname,
-      content: text,
-    };
   }
 
   @Post('url')
   async parsePdfFromUrl(
-    @Body() requestDto: PdfParserRequestDto
-  ) : Promise<PdfParserUrlresultDto> {
+    @Body() requestDto: PdfParserRequestDto,
+  ): Promise<PdfParserUrlresultDto> {
+    try {
+      const file = await this.pdfparserService.loadPdfFromUrl(requestDto.url);
+      const text = await this.pdfparserService.parsePdf(file);
 
-    const file = await this.pdfparserService.loadPdfFromUrl(requestDto.url);
-    const text = await this.pdfparserService.parsePdf(file)
-
-    if (typeof text !== 'string' || text.length === 0) {
-      throw new UnprocessableEntityException('Could not parse given PDF file');
-    }
-
-    return {
-      originalUrl: requestDto.url,
-      content: text,
+      return {
+        originalUrl: requestDto.url,
+        content: text,
+      };
+    } catch (error) {
+      if (error instanceof PdfNotParsedError) {
+        throw new UnprocessableEntityException(error.message);
+      }
+      throw new BadRequestException(error.message);
     }
   }
 }
